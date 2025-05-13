@@ -5,7 +5,7 @@
 # Figure 2. Part A. All state trends overlayed in 2 figs: spring and fall
 # Figure 2. Part B. State by state: spring and fall
 
-# last updated 24 April 2025
+# last updated 13 May 2025
 ###############################################
 ###############################################
 
@@ -20,9 +20,8 @@ library(cowplot)
 ###########################################################################################
 
 # Remember the models,
-# 1. Presence ~ s(Year) + s(Survey, bs = "re")
-# 2. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re")
-# 3. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + WaterTemp
+# SPRING m7: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+# FALL m6: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
 
 
 # Read in saved RDS of menhaden data, 1972-2023
@@ -35,12 +34,12 @@ pgam.list <- readRDS("/Users/janellemorano/Git/menhaden-dist-ms/data/PA-GAM-resu
 names(pgam.list)
 # [1] "m1_alldata.spring" "m1_alldata.fall"   "m2_alldata.spring" "m2_alldata.fall"   "m3_alldata.spring"
 # [6] "m3_alldata.fall"   "m4_alldata.spring" "m4_alldata.fall"   "m5_alldata.spring" "m5_alldata.fall"  
+# [11] "m6_alldata.spring" "m6_alldata.fall"   "m7_alldata.spring" "m7_alldata.fall" 
 
 # Presence GAM model predictions
 predictions.pgam.list <- readRDS("/Users/janellemorano/Git/menhaden-dist-ms/data/PA-GAM-predictions.rds")
 names(predictions.pgam.list)
-# [1] "predictions.pa.gam.5.spring.df" "predictions.pa.gam.5.fall.df"   "predictions.pa.gam.1.spring.df"
-# [4] "predictions.pa.gam.1.fall.df" 
+# "predictions.pa.gam.7.spring.df" "predictions.pa.gam.6.fall.df" 
 
 
 

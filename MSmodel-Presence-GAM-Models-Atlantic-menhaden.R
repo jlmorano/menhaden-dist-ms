@@ -4,7 +4,7 @@
 
 # Data and choice GAM models for the Atlantic menhaden manuscript.
 
-# last updated 24 April 2025
+# last updated 13 May 2025
 
 ###############################################
 ###############################################
@@ -15,6 +15,9 @@
 # 1. Presence ~ s(Year) + s(Survey, bs = "re")
 # 2. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re")
 # 3. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + WaterTemp
+# 4. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth
+# 5. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
+
 
 #----- Predictions on selected model
 # Save data for graphing in external file
@@ -58,7 +61,7 @@ for (name in names(data.list)) {
 }
 
 
-#----- 3. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + WaterTemp
+#----- 3. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(WaterTemp)
 for (name in names(data.list)) {
   new.name <- paste0("m3_", name)
   pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(WaterTemp), 
@@ -69,7 +72,7 @@ for (name in names(data.list)) {
 }
 
 
-#----- 4. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth
+#----- 4. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth)
 for (name in names(data.list)) {
   new.name <- paste0("m4_", name)
   pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth), 
@@ -80,12 +83,34 @@ for (name in names(data.list)) {
 }
 
 
-#----- 5. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
+#----- 5. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth) + s(WaterTemp)
 for (name in names(data.list)) {
   new.name <- paste0("m5_", name)
   pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth) + s(WaterTemp), 
                                 family = binomial(link = "logit"), 
-                                method = "ML", 
+                                method = "REML", 
+                                data = data.list[[name]])
+  pa.gam.summaries[[new.name]] <- summary(pa.gam.list[[new.name]])
+}
+
+
+#----- 6. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
+for (name in names(data.list)) {
+  new.name <- paste0("m6_", name)
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp, 
+                                family = binomial(link = "logit"), 
+                                method = "REML", 
+                                data = data.list[[name]])
+  pa.gam.summaries[[new.name]] <- summary(pa.gam.list[[new.name]])
+}
+
+
+#----- 7. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+for (name in names(data.list)) {
+  new.name <- paste0("m7_", name)
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp), 
+                                family = binomial(link = "logit"), 
+                                method = "REML", 
                                 data = data.list[[name]])
   pa.gam.summaries[[new.name]] <- summary(pa.gam.list[[new.name]])
 }
@@ -104,30 +129,62 @@ pa.gam.summaries <- readRDS("/Users/janellemorano/Git/menhaden-dist-ms/data/PA-G
 #----- Check the models ---------------------------------------------------------------
 # Get model coefficients to compare
 library(modelsummary)
-pa.gam.table <- modelsummary(pa.gam.list, output = "data.frame")
-write.csv(pa.gam.table, "/Users/janellemorano/Git/menhaden-dist-ms/gam-table.csv")
+# pa.gam.table <- modelsummary(pa.gam.list, output = "data.frame")
+pa.gam.table <- modelsummary(pa.gam.list, output = "gam-model-results-table.docx")
+
+# Print list of model formulas (only the spring models since the falls are duplicates)
+for (i in seq(1, length(pa.gam.list), by = 2)) {
+  cat("Model", i, "formula:\n")
+  print(formula(pa.gam.list[[i]]))
+  cat("\n")
+}
+# Open the Word doc "gam-model-results-table.docx" and add formulas
 
 
 # Review individuals
+# m1: Presence ~ s(Year) + s(Survey, bs = "re")
+summary(pa.gam.list[[1]])
+gratia::draw(pa.gam.list[[1]])
+summary(pa.gam.list[[2]])
+gratia::draw(pa.gam.list[[2]])
+
+# m2: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re")
+summary(pa.gam.list[[3]])
+gratia::draw(pa.gam.list[[3]])
+summary(pa.gam.list[[4]])
+gratia::draw(pa.gam.list[[4]])
+
+# m3: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(WaterTemp)
+summary(pa.gam.list[[5]])
+gratia::draw(pa.gam.list[[5]])
+summary(pa.gam.list[[6]])
+gratia::draw(pa.gam.list[[6]])
+
+# m4: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth)
+summary(pa.gam.list[[7]])
+gratia::draw(pa.gam.list[[7]])
+summary(pa.gam.list[[8]])
+gratia::draw(pa.gam.list[[8]])
+
+# m5: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth) + s(WaterTemp)
 summary(pa.gam.list[[9]])
+gratia::draw(pa.gam.list[[9]])
 summary(pa.gam.list[[10]])
-gam.check(pa.gam.list[[2]])
-concurvity(pa.gam.list[[2]], full = TRUE) #if values are high, >0.8, run with FALSE
-concurvity(pa.gam.list, full = FALSE)
-plot(pa.gam.list[[1]], rug = TRUE, residuals = TRUE, pch = 1, cex = 1, shift = coef(pa.gam.list[[1]])[1])
+gratia::draw(pa.gam.list[[10]])
 
+# ***(best for fall) m6: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
+summary(pa.gam.list[[11]])
+gratia::draw(pa.gam.list[[11]])
+summary(pa.gam.list[[12]]) #***(best for fall)
+gratia::draw(pa.gam.list[[12]])
+# library(DHARMa)
 
-# Likelihood Ratio Test
-# anova(null or simple model, complex_model, test = "LRT")
-anova(pa.gam.list[[1]], pa.gam.list[[3]], test = "LRT")
-anova(pa.gam.list[[2]], pa.gam.list[[4]], test = "LRT")
+# ***(best for spring) m7: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+summary(pa.gam.list[[13]]) #***(best for spring)
+gratia::draw(pa.gam.list[[13]])
+summary(pa.gam.list[[14]])
+gratia::draw(pa.gam.list[[14]])
 
-
-anova(pa.gam.list[[3]], pa.gam.list[[5]], test = "LRT")
-# models were not all fitted to the same size of dataset because adding WaterTemp reduced the number of samples available
-  
-summary(pa.gam.list[[1]])$n
-summary(pa.gam.list[[5]])$n
 
 
 
@@ -185,23 +242,23 @@ preddata.pa.gam.list <- readRDS("/Users/janellemorano/Git/menhaden-dist-ms/data/
 
 
 ###########################################################################################
-#----- Predictions using model #5  (and #1)--------------------------------------------------
+#----- Predictions using model #7 for spring; model #6 for fall --------------------------
 ###########################################################################################
 
-# 5. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
-predictions.pa.gam.5.spring <- predict(pa.gam.list[[9]], se.fit=TRUE, newdata=preddata.pa.gam.list[[1]], type = "response", exclude = "s(Survey)")
-predictions.pa.gam.5.fall <- predict(pa.gam.list[[10]], se.fit=TRUE, newdata=preddata.pa.gam.list[[2]], type = "response", exclude = "s(Survey)")
-# 1. Presence ~ s(Year) + s(Survey, bs = "re")
-predictions.pa.gam.1.spring <- predict(pa.gam.list[[1]], se.fit=TRUE, newdata=preddata.pa.gam.list[[1]], type = "response", exclude = "s(Survey)")
-predictions.pa.gam.1.fall <- predict(pa.gam.list[[2]], se.fit=TRUE, newdata=preddata.pa.gam.list[[2]], type = "response", exclude = "s(Survey)")
+# SPRING m7: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+# pa.gam.list[[13]]
+predictions.pa.gam.7.spring <- predict(pa.gam.list[[13]], se.fit=TRUE, newdata=preddata.pa.gam.list[[1]], type = "response", exclude = "s(Survey)")
+
+# FALL m6: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
+# pa.gam.list[[12]]
+predictions.pa.gam.6.fall <- predict(pa.gam.list[[12]], se.fit=TRUE, newdata=preddata.pa.gam.list[[2]], type = "response", exclude = "s(Survey)")
 
 # Create Indiv Datasets of Predictions
-predictions.pa.gam.5.spring.df <- cbind(preddata.pa.gam.list[[1]], data.frame(predictions.pa.gam.5.spring))
-predictions.pa.gam.5.fall.df <- cbind(preddata.pa.gam.list[[2]], data.frame(predictions.pa.gam.5.fall))
-predictions.pa.gam.1.spring.df <- cbind(preddata.pa.gam.list[[1]], data.frame(predictions.pa.gam.1.spring))
-predictions.pa.gam.1.fall.df <- cbind(preddata.pa.gam.list[[2]], data.frame(predictions.pa.gam.1.fall))
+predictions.pa.gam.7.spring.df <- cbind(preddata.pa.gam.list[[1]], data.frame(predictions.pa.gam.7.spring))
+predictions.pa.gam.6.fall.df <- cbind(preddata.pa.gam.list[[2]], data.frame(predictions.pa.gam.6.fall))
 
 # Make list of Dataframes of Predictions
-predictions.pa.gam.list <- list(predictions.pa.gam.5.spring.df = predictions.pa.gam.5.spring.df, predictions.pa.gam.5.fall.df = predictions.pa.gam.5.fall.df, predictions.pa.gam.1.spring.df = predictions.pa.gam.1.spring.df, predictions.pa.gam.1.fall.df = predictions.pa.gam.1.fall.df)
+predictions.pa.gam.list <- list(predictions.pa.gam.7.spring.df = predictions.pa.gam.7.spring.df,
+                                predictions.pa.gam.6.fall.df = predictions.pa.gam.6.fall.df)
 saveRDS(predictions.pa.gam.list, file = "/Users/janellemorano/Git/menhaden-dist-ms/data/PA-GAM-predictions.rds")
     

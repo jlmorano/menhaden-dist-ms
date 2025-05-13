@@ -4,7 +4,7 @@
 
 # Figure 3. State proportions of presence
 
-# last updated 1 May 2025
+# last updated 13 May 2025
 ###############################################
 ###############################################
 
@@ -20,8 +20,7 @@ library(cowplot)
 # Presence GAM model predictions
 predictions.pgam.list <- readRDS("/Users/janellemorano/Git/menhaden-dist-ms/data/PA-GAM-predictions.rds")
 names(predictions.pgam.list)
-# [1] "predictions.pa.gam.5.spring.df" "predictions.pa.gam.5.fall.df"   "predictions.pa.gam.1.spring.df"
-# [4] "predictions.pa.gam.1.fall.df" 
+# "predictions.pa.gam.7.spring.df" "predictions.pa.gam.6.fall.df" 
 
 
 
@@ -61,6 +60,7 @@ f2a1 <- ggplot(subset(predictions.pgam.list[[1]], Year %in% 1989:2023), aes(x = 
   geom_bar(position = "fill", stat = "identity") +
   scale_fill_manual(values = pal8) +
   theme_classic() +
+  scale_x_discrete(breaks = as.character(seq(1990, 2020, by = 5))) +
   labs(x = "", y = "Proportion of Total Presence") +
   theme(legend.position = "none")
 
@@ -68,12 +68,13 @@ f2a2 <- ggplot(subset(predictions.pgam.list[[2]], Year %in% 1989:2023), aes(x = 
   geom_bar(position = "fill", stat = "identity") +
   scale_fill_manual(values = pal8) +
   theme_classic() +
+  scale_x_discrete(breaks = as.character(seq(1990, 2020, by = 5))) +
   labs(x = "", y = "Proportion of Total Presence") +
   theme(legend.position = "none")
 
 
 plot_grid(f2a1, f2a2, labels=c("A", "B"), ncol = 2, nrow = 1)
-#ggsave(file = "/Users/janellemorano/Git/menhaden-dist-ms/figures/Fig2A-PA-GAM-state-proportions.png", width=7, height = 4)
+#ggsave(file = "/Users/janellemorano/Git/menhaden-dist-ms/figure-output/Fig2A-PA-GAM-state-proportions.png", width=7, height = 4)
 
 
 

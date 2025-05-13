@@ -130,8 +130,10 @@ nefsc <- nefsc %>%
 
 
 pal8 <- c("#440154", "#482878", "#3e4989", "#26828e", "#35b779", "#6ece58", "#bddf26", "#fde725")
+pal8lite <- adjustcolor(pal8, alpha = 0.3) #make transparent
 
-#----- Highlight State: Map Federal Data lighter than State data
+
+#----- Highlight Federal: Map Federal Data darker than State data
 ggplot(data = world) +  
   geom_sf(data = us, color = "gray60", fill = "gray95") + #CCCC99
   geom_sf(data = canada, color = "gray60", fill = "gray95") +
@@ -142,19 +144,21 @@ ggplot(data = world) +
   geom_sf(data = subset(nefsc, State %in% "DEMD"), color = "white", fill = pal8[5]) +
   geom_sf(data = subset(nefsc, State %in% "VA"), color = "white", fill = pal8[6]) +
   geom_sf(data = subset(nefsc, State %in% "NC"), color = "white", fill = pal8[7]) +
-  geom_point(data = subset(state, State %in% "RICTNY"), aes(Longitude, Latitude), color = pal8[3], size = 0.25) +
-  geom_point(data = subset(state, State %in% "NJ"), aes(Longitude, Latitude), color = pal8[4], size = 0.25) +
-  geom_point(data = subset(state, State %in% "DEMD"), aes(Longitude, Latitude), color = pal8[5], size = 0.25) +
-  geom_point(data = subset(state, State %in% "VA"), aes(Longitude, Latitude), color = pal8[6], size = 0.25) +
-  geom_point(data = subset(state, State %in% "NC"), aes(Longitude, Latitude), color = pal8[7], size = 0.25) +
-  geom_point(data = subset(state, State %in% "SCGAFL"), aes(Longitude, Latitude), color = pal8[8], size = 0.25) +
+  geom_point(data = subset(state, State %in% "RICTNY"), aes(Longitude, Latitude), color = pal8lite[3], size = 0.25) +
+  geom_point(data = subset(state, State %in% "NJ"), aes(Longitude, Latitude), color = pal8lite[4], size = 0.25) +
+  geom_point(data = subset(state, State %in% "DEMD"), aes(Longitude, Latitude), color = pal8lite[5], size = 0.25) +
+  geom_point(data = subset(state, State %in% "VA"), aes(Longitude, Latitude), color = pal8lite[6], size = 0.25) +
+  geom_point(data = subset(state, State %in% "NC"), aes(Longitude, Latitude), color = pal8lite[7], size = 0.25) +
+  geom_point(data = subset(state, State %in% "SCGAFL"), aes(Longitude, Latitude), color = pal8lite[8], size = 0.25) +
   coord_sf (xlim = c(-82.5,-64), ylim = c (28,45), expand = FALSE ) + #Full coast
   # coord_sf (xlim = c(-82.5,-64), ylim = c (28,43), expand = FALSE ) + #tighter crop
-  theme_void() +
+  # theme_void() +
+  theme_classic() +
   theme(panel.background = element_rect(fill = "white")) + # slategray2
-  theme (axis.text = element_blank()) +
+  theme(text = element_text(size = 14)) +
+  # theme (axis.text = element_blank()) +
   xlab("longitude") + 
   ylab("latitude")
-#ggsave(file = "/Users/janellemorano/Git/menhaden-dist-ms/figures/state-regions-map-alldata.png", width=5.5, height = 6)
+#ggsave(file = "/Users/janellemorano/Git/menhaden-dist-ms/figure-output/Fig1-state-regions-map.png", width=5.5, height = 6)
 
 

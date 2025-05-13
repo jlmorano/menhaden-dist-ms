@@ -95,7 +95,7 @@ for (i in states) {
 fig.comb.plot <- plot_grid(plotlist = fig.comb, ncol = 2, byrow = FALSE)
 # Print the combined plot
 print(fig.comb.plot)
-#ggsave(file = "/Users/janellemorano/Git/menhaden-dist-ms/figures/SupFig3.avepresence-by-state.png", width=9, height = 9)
+#ggsave(file = "/Users/janellemorano/Git/menhaden-dist-ms/figure-output/SupFig3.avepresence-by-state.png", width=9, height = 9)
 
 
 
