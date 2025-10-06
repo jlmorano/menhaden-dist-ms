@@ -1,97 +1,59 @@
-﻿This readme file was generated on [YYYY-MM-DD] by [NAME]
-<help text in angle brackets should be deleted before finalizing your document>
-<[text in square brackets should be changed for your specific dataset]>
+This readme file was generated on 2025-10-05 by JANELLE MORANO
+
 
 
 GENERAL INFORMATION
 
-Title of Dataset: 
+Title of Dataset: SPATIOTEMPORAL COMPLEX DYNAMICS DRIVES COASTWIDE REDISTRIBUTION OF ATLANTIC MENHADEN
 
-<provide at least two contacts>
 Author/Principal Investigator Information
-Name: 
-ORCID:
-Institution: 
-Address: 
-Email: 
+Name: JANELLE L. MORANO
+ORCID: 0000-0001-5950-3313
+Institution: Cornell University, Ithaca, New York USA
+Current Institution: Cooperative Institute for Marine and Atmospheric Research, NOAA Pacific Fisheries Science Center, Honolulu, Hawaii USA
+Email: janelle.morano@noaa.gov
 
 Author/Associate or Co-investigator Information
-Name: 
+Name: SURESH A. SETHI
 ORCID:
-Institution: 
-Address: 
+Institution: Cornell University, Ithaca, New York USA and Brooklyn College, CUNY, Brooklyn, New York USA
 Email: 
 
 Author/Alternate Contact Information
-Name: 
+Name: PATRICK J. SULLIVAN
 ORCID:
-Institution: 
-Address: 
-Email: 
+Institution: Cornell University, Ithaca, New York USA
+Email: pjs34@cornell.edu
 
-Date of data collection: <provide single date, range, or approximate date; suggested format YYYY-MM-DD> 
+Date of data collection: 1972-2023 
 
-Geographic location of data collection: <provide latitude, longiute, or city/region, State, Country>
+Geographic location of data collection: USA east coast from Maine to Florida
 
-Information about funding sources that supported the collection of the data: 
+Information about funding sources that supported the collection of the data: NOAA Fisheries
 
 
 SHARING/ACCESS INFORMATION
 
-Licenses/restrictions placed on the data: 
+Data were provided by
+-Division of Marine Fisheries
+-Connecticut Department of Energy and Environmental Protection
+-Delaware Division of Fish & Wildlife
+-Georgia Coastal Resources Division, Georgia Department of Natural Resources
+-Striped Bass Program, Fisheries and Boating Service, Maryland Department of Natural Resources
+-New Jersey Department of Environmental Protection, Marine Resources Administration
+-North Carolina Division of Marine Fisheries (the analyses and conclusions resulting from the non-Division use of the data are not necessarily those of the NC Division of Marine Fisheries)
+-Southeast Area Monitoring and Assessment Program (SEAMAP)
+-Fisheries Management Division at the Virginia Marine Resources Commission
+-NOAA Northeast Fisheries Science Center
+-Rob Latour, Virginia Institute of Marine Science 
 
-Links to publications that cite or use the data: 
-
-Links to other publicly accessible locations of the data: 
-
-Links/relationships to ancillary data sets: 
-
-Was data derived from another source?
-If yes, list source(s): 
-
-Recommended citation for this dataset: 
 
 
-DATA & FILE OVERVIEW
-
-File List: <list all files (or folders, as appropriate for dataset organization) contained in the dataset, with a brief description>
-
-Relationship between files, if important: 
-
-Additional related data collected that was not included in the current data package: 
-
-Are there multiple versions of the dataset?
-If yes, name of file(s) that was updated: 
-Why was the file updated? 
-When was the file updated? 
 
 
 METHODOLOGICAL INFORMATION
 
 Description of methods used for collection/generation of data: <include links or references to publications or other documentation containing experimental design or protocols used in data collection>
 
-Methods for processing the data: <describe how the submitted data were generated from the raw or collected data>
+Morano, Janelle L., Suresh A. Sethi, Patrick J. Sullivan. In review. Spatiotemporally complex coastwide range expansion of Atlantic menhaden
 
-Instrument- or software-specific information needed to interpret the data: <include full name and version of software, and any necessary packages or libraries needed to run scripts>
-
-Standards and calibration information, if appropriate: 
-
-Environmental/experimental conditions: 
-
-Describe any quality-assurance procedures performed on the data: 
-
-People involved with sample collection, processing, analysis and/or submission: 
-
-
-DATA-SPECIFIC INFORMATION FOR: [FILENAME]
-<repeat this section for each dataset, folder or file, as appropriate>
-
-Number of variables: 
-
-Number of cases/rows: 
-
-Variable List: <list variable name(s), description(s), unit(s) and value labels as appropriate for each>
-
-Missing data codes: <list code/symbol and definition>
-
-Specialized formats or other abbreviations used: 
