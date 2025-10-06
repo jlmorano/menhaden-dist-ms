@@ -4,7 +4,7 @@
 
 # Data and choice GAM models for the Atlantic menhaden manuscript.
 
-# last updated 13 May 2025
+# last updated 27 July 2025
 
 ###############################################
 ###############################################
@@ -14,9 +14,13 @@
 #----- Presence-Absence GAMMs
 # 1. Presence ~ s(Year) + s(Survey, bs = "re")
 # 2. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re")
-# 3. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + WaterTemp
-# 4. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth
-# 5. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
+# 3. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(WaterTemp)
+# 4. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth)
+# 5. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth) + s(WaterTemp)
+# ***(best for fall) 6. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
+# ***(best for spring) 7. Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + WaterTemp
+# 8. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+
 
 
 #----- Predictions on selected model
@@ -105,16 +109,26 @@ for (name in names(data.list)) {
 }
 
 
-#----- 7. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+#----- 7. Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + WaterTem
 for (name in names(data.list)) {
   new.name <- paste0("m7_", name)
-  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp), 
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + WaterTemp, 
                                 family = binomial(link = "logit"), 
                                 method = "REML", 
                                 data = data.list[[name]])
   pa.gam.summaries[[new.name]] <- summary(pa.gam.list[[new.name]])
 }
 
+
+#----- 8. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+for (name in names(data.list)) {
+  new.name <- paste0("m8_", name)
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp), 
+                                family = binomial(link = "logit"), 
+                                method = "REML", 
+                                data = data.list[[name]])
+  pa.gam.summaries[[new.name]] <- summary(pa.gam.list[[new.name]])
+}
 
 #----- Save model runs as RDS
 saveRDS(pa.gam.list, file = "/Users/janellemorano/Git/menhaden-dist-ms/data/PA-GAM-results.rds")
@@ -175,17 +189,24 @@ gratia::draw(pa.gam.list[[10]])
 # ***(best for fall) m6: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
 summary(pa.gam.list[[11]])
 gratia::draw(pa.gam.list[[11]])
+plot(pa.gam.list[[12]], select =11)
+
 summary(pa.gam.list[[12]]) #***(best for fall)
 gratia::draw(pa.gam.list[[12]])
+plot(pa.gam.list[[12]], pages = 1, scheme = 1, seWithMean = TRUE)
 # library(DHARMa)
 
-# ***(best for spring) m7: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+# ***(best for spring) m7. Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + WaterTemp
 summary(pa.gam.list[[13]]) #***(best for spring)
 gratia::draw(pa.gam.list[[13]])
+plot(pa.gam.list[[13]], pages = 1, scheme = 1, seWithMean = TRUE)
+
 summary(pa.gam.list[[14]])
 gratia::draw(pa.gam.list[[14]])
 
-
+# m8: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+summary(pa.gam.list[[15]])
+gratia::draw(pa.gam.list[[15]])
 
 
 ###########################################################################################
@@ -242,10 +263,10 @@ preddata.pa.gam.list <- readRDS("/Users/janellemorano/Git/menhaden-dist-ms/data/
 
 
 ###########################################################################################
-#----- Predictions using model #7 for spring; model #6 for fall --------------------------
+#----- Predictions using model #7SPRING for spring; model #6 for fall --------------------------
 ###########################################################################################
 
-# SPRING m7: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+# SPRING m7: Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
 # pa.gam.list[[13]]
 predictions.pa.gam.7.spring <- predict(pa.gam.list[[13]], se.fit=TRUE, newdata=preddata.pa.gam.list[[1]], type = "response", exclude = "s(Survey)")
 
