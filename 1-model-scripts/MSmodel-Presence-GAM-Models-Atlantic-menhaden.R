@@ -4,7 +4,7 @@
 
 # Data and choice GAM models for the Atlantic menhaden manuscript.
 
-# last updated 27 July 2025
+# last updated 15 April 2026 (WaterTemp changed to SurfTemp so that it can be used alt to BotTemp)
 
 ###############################################
 ###############################################
@@ -14,12 +14,14 @@
 #----- Presence-Absence GAMMs
 # 1. Presence ~ s(Year) + s(Survey, bs = "re")
 # 2. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re")
-# 3. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(WaterTemp)
+# 3. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(SurfTemp)
 # 4. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth)
-# 5. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth) + s(WaterTemp)
-# ***(best for fall) 6. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
-# ***(best for spring) 7. Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + WaterTemp
-# 8. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+# 5. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth) + s(SurfTemp)
+# ***(best for fall) 6. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + SurfTemp
+# ***(best for spring) 7. Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + SurfTemp
+# 8. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(SurfTemp)
+# NEW
+# 9. Presence ~ s(Year, by State) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin
 
 
 
@@ -66,10 +68,10 @@ for (name in names(data.list)) {
 }
 
 
-#----- 3. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(WaterTemp)
+#----- 3. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(SurfTemp)
 for (name in names(data.list)) {
   new.name <- paste0("m3_", name)
-  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(WaterTemp), 
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(SurfTemp), 
                                 family = binomial(link = "logit"), 
                                 method = "REML", 
                                 data = data.list[[name]])
@@ -88,10 +90,10 @@ for (name in names(data.list)) {
 }
 
 
-#----- 5. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth) + s(WaterTemp)
+#----- 5. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth) + s(SurfTemp)
 for (name in names(data.list)) {
   new.name <- paste0("m5_", name)
-  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth) + s(WaterTemp), 
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth) + s(SurfTemp), 
                                 family = binomial(link = "logit"), 
                                 method = "REML", 
                                 data = data.list[[name]])
@@ -99,10 +101,10 @@ for (name in names(data.list)) {
 }
 
 
-#----- 6. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
+#----- 6. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + SurfTemp
 for (name in names(data.list)) {
   new.name <- paste0("m6_", name)
-  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp, 
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + SurfTemp, 
                                 family = binomial(link = "logit"), 
                                 method = "REML", 
                                 data = data.list[[name]])
@@ -113,7 +115,7 @@ for (name in names(data.list)) {
 #----- 7. Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + WaterTem
 for (name in names(data.list)) {
   new.name <- paste0("m7_", name)
-  pa.gam.list[[new.name]] = gam(Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + WaterTemp, 
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + SurfTemp, 
                                 family = binomial(link = "logit"), 
                                 method = "REML", 
                                 data = data.list[[name]])
@@ -121,10 +123,21 @@ for (name in names(data.list)) {
 }
 
 
-#----- 8. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+#----- 8. Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(SurfTemp)
 for (name in names(data.list)) {
   new.name <- paste0("m8_", name)
-  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp), 
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(SurfTemp), 
+                                family = binomial(link = "logit"), 
+                                method = "REML", 
+                                data = data.list[[name]])
+  pa.gam.summaries[[new.name]] <- summary(pa.gam.list[[new.name]])
+}
+
+
+#----- 9. Presence ~ s(Year, by State) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin
+for (name in names(data.list)) {
+  new.name <- paste0("m8_", name)
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(SurfTemp), 
                                 family = binomial(link = "logit"), 
                                 method = "REML", 
                                 data = data.list[[name]])
@@ -132,11 +145,11 @@ for (name in names(data.list)) {
 }
 
 #----- Save model runs as RDS
-saveRDS(pa.gam.list, file = "PA-GAM-results.rds")
-saveRDS(pa.gam.summaries, file = "PA-GAM-summaries.rds")
+saveRDS(pa.gam.list, file = "PA-GAM-results-2026.rds")
+saveRDS(pa.gam.summaries, file = "PA-GAM-summaries-2026.rds")
 
-pa.gam.list <- readRDS("PA-GAM-results.rds")
-pa.gam.summaries <- readRDS("PA-GAM-summaries.rds")
+pa.gam.list <- readRDS("PA-GAM-results-2026.rds")
+pa.gam.summaries <- readRDS("PA-GAM-summaries-2026.rds")
 
 
 
@@ -145,7 +158,7 @@ pa.gam.summaries <- readRDS("PA-GAM-summaries.rds")
 # Get model coefficients to compare
 library(modelsummary)
 # pa.gam.table <- modelsummary(pa.gam.list, output = "data.frame")
-pa.gam.table <- modelsummary(pa.gam.list, output = "gam-model-results-table.docx")
+pa.gam.table <- modelsummary(pa.gam.list, output = "gam-model-results-table-2026.docx")
 
 # Print list of model formulas (only the spring models since the falls are duplicates)
 for (i in seq(1, length(pa.gam.list), by = 2)) {
@@ -169,7 +182,7 @@ gratia::draw(pa.gam.list[[3]])
 summary(pa.gam.list[[4]])
 gratia::draw(pa.gam.list[[4]])
 
-# m3: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(WaterTemp)
+# m3: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(SurfTemp)
 summary(pa.gam.list[[5]])
 gratia::draw(pa.gam.list[[5]])
 summary(pa.gam.list[[6]])
@@ -181,13 +194,13 @@ gratia::draw(pa.gam.list[[7]])
 summary(pa.gam.list[[8]])
 gratia::draw(pa.gam.list[[8]])
 
-# m5: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth) + s(WaterTemp)
+# m5: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + s(Depth) + s(SurfTemp)
 summary(pa.gam.list[[9]])
 gratia::draw(pa.gam.list[[9]])
 summary(pa.gam.list[[10]])
 gratia::draw(pa.gam.list[[10]])
 
-# ***(best for fall) m6: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
+# ***(best for fall) m6: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + SurfTemp
 summary(pa.gam.list[[11]])
 gratia::draw(pa.gam.list[[11]])
 plot(pa.gam.list[[12]], select =11)
@@ -197,7 +210,7 @@ gratia::draw(pa.gam.list[[12]])
 plot(pa.gam.list[[12]], pages = 1, scheme = 1, seWithMean = TRUE)
 # library(DHARMa)
 
-# ***(best for spring) m7. Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + WaterTemp
+# ***(best for spring) m7. Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + SurfTemp
 summary(pa.gam.list[[13]]) #***(best for spring)
 gratia::draw(pa.gam.list[[13]])
 plot(pa.gam.list[[13]], pages = 1, scheme = 1, seWithMean = TRUE)
@@ -205,9 +218,14 @@ plot(pa.gam.list[[13]], pages = 1, scheme = 1, seWithMean = TRUE)
 summary(pa.gam.list[[14]])
 gratia::draw(pa.gam.list[[14]])
 
-# m8: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+# m8: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(SurfTemp)
 summary(pa.gam.list[[15]])
 gratia::draw(pa.gam.list[[15]])
+
+
+# m9: Presence ~ s(Year, by State) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin
+summary(pa.gam.list[[16]])
+gratia::draw(pa.gam.list[[16]])
 
 
 ###########################################################################################
@@ -223,7 +241,7 @@ for (i in unique(data.list$alldata.spring$State)) {
                         Year = j,
                         Survey = k,
                         Depth = median(data.list$alldata.spring$Depth[data.list$alldata.spring$State == i & data.list$alldata.spring$Year == j], na.rm=TRUE),
-                        WaterTemp = median(data.list$alldata.spring$WaterTemp[data.list$alldata.spring$State == i & data.list$alldata.spring$Year == j], na.rm=TRUE))
+                        SurfTemp = median(data.list$alldata.spring$SurfTemp[data.list$alldata.spring$State == i & data.list$alldata.spring$Year == j], na.rm=TRUE))
       alld.preddata.pa.gam.spring <- rbind(alld.preddata.pa.gam.spring, new)
     }
   }
@@ -238,7 +256,7 @@ for (i in unique(data.list$alldata.fall$State)) {
                         Year = j,
                         Survey = k,
                         Depth = median(data.list$alldata.fall$Depth[data.list$alldata.fall$State == i], na.rm=TRUE),
-                        WaterTemp = median(data.list$alldata.fall$WaterTemp[data.list$alldata.fall$State == i & data.list$alldata.fall$Year == j], na.rm=TRUE))
+                        SurfTemp = median(data.list$alldata.fall$SurfTemp[data.list$alldata.fall$State == i & data.list$alldata.fall$Year == j], na.rm=TRUE))
       alld.preddata.pa.gam.fall <- rbind(alld.preddata.pa.gam.fall, new)
     }
   }
@@ -267,11 +285,11 @@ preddata.pa.gam.list <- readRDS("PA-GAM-preddata.rds")
 #----- Predictions using model #7SPRING for spring; model #6 for fall --------------------------
 ###########################################################################################
 
-# SPRING m7: Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + s(WaterTemp)
+# SPRING m7: Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + s(SurfTemp)
 # pa.gam.list[[13]]
 predictions.pa.gam.7.spring <- predict(pa.gam.list[[13]], se.fit=TRUE, newdata=preddata.pa.gam.list[[1]], type = "response", exclude = "s(Survey)")
 
-# FALL m6: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + WaterTemp
+# FALL m6: Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + SurfTemp
 # pa.gam.list[[12]]
 predictions.pa.gam.6.fall <- predict(pa.gam.list[[12]], se.fit=TRUE, newdata=preddata.pa.gam.list[[2]], type = "response", exclude = "s(Survey)")
 
