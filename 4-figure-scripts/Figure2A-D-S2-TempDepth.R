@@ -28,6 +28,39 @@ data.list <- readRDS("menhaden.data.list.rds")
 
 
 ###########################################################################################
+#----- NEW NEW NEW Supplemental Fig X. Correlations between variables ------------------------------------
+###########################################################################################
+library(corrplot)
+library(ggcorrplot)
+library(patchwork)
+
+# Function to process data and create the plot
+make_corr_plot <- function(data, plot_title) {
+  data <- data |>
+  select(Depth, BotTemp, BotSalin, SurfTemp, SurfSalin) |>
+  rename(Depth = Depth, "Bottom Temp" = BotTemp, "Bottom Salinity" = BotSalin, "Surface Temp" = SurfTemp, "Surface Salinity" = SurfSalin)
+
+  corr.mat <- cor(data, method = "pearson", use = "complete.obs")
+
+  ggcorrplot(corr.mat, hc.order = TRUE, type = "lower", lab = TRUE, outline.color = "white", tl.col = "black", tl.srt = 45) +
+    labs(title = plot_title) +
+    theme(plot.title = element_text(hjust = 0.5))
+}
+
+p.spring <- make_corr_plot(data.list[[1]], "Spring")
+p.fall <- make_corr_plot(data.list[[2]], "Fall")
+
+p.spring + p.fall + 
+  plot_layout(ncol = 2) + 
+  plot_annotation(tag_levels = 'A') & theme(plot.tag = element_text(face = "bold", size = 14))
+
+ggsave(file = here(dir, "5-figures", "SupFigX.correlations.png"), width=10, height = 5)
+
+
+
+
+
+###########################################################################################
 #----- Supplemental Fig 2. Depth vs Temperature ------------------------------------
 ###########################################################################################
 
@@ -215,3 +248,4 @@ s2b <- ggplot(data.list[[2]], aes(x=WaterTemp, y=log(Biomass+1), color = Survey)
   labs(x= "Water Temperature (°C)", y = "log(Biomass+1) (kg/tow)")
 plot_grid(s2a, s2b, labels=c("A", "B"), ncol = 2, nrow = 1)
 #ggsave(file = "SupFig2.biomass-v-temp-bySurvey.png", width=10, height = 4)
+
