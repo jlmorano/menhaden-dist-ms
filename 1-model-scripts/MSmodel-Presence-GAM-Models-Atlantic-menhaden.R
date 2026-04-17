@@ -31,13 +31,13 @@
 
 ###########################################################################################
 
-setwd()
-
 library(tidyverse)
 library(mgcv)
+library(here)
+dir <- here::here()
 
 # Read in saved RDS
-data.list <- readRDS("menhaden.data.list.rds")
+data.list <- readRDS(here(dir, "2-input-data", "menhaden.data.list.rds"))
 colSums(is.na(data.list[[1]]))
 
 
@@ -136,8 +136,8 @@ for (name in names(data.list)) {
 
 #----- 9. Presence ~ s(Year, by State) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin
 for (name in names(data.list)) {
-  new.name <- paste0("m8_", name)
-  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(SurfTemp), 
+  new.name <- paste0("m9_", name)
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + s(SurfTemp) +s(SurfSalin), 
                                 family = binomial(link = "logit"), 
                                 method = "REML", 
                                 data = data.list[[name]])
@@ -226,6 +226,8 @@ gratia::draw(pa.gam.list[[15]])
 # m9: Presence ~ s(Year, by State) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin
 summary(pa.gam.list[[16]])
 gratia::draw(pa.gam.list[[16]])
+
+
 
 
 ###########################################################################################
