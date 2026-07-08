@@ -87,3 +87,23 @@ final.plot <- plot_grid(y.label, final.plot, ncol = 2, rel_widths = c(0.05, 1))
 # Print the combined plot
 print(final.plot)
 #ggsave(file = here(dir, "5-figures", "Fig1B-monthly-menhaden.png"), width=6, height = 9)
+
+
+# Proportion of samples with menhaden by survey
+data |>
+group_by(Survey) |>
+summarise(n_samples  = n(),
+    presence   = sum(Presence == 1),
+    absence    = sum(Presence == 0),
+    prop_found = presence / n_samples)
+
+
+# Samples by depth
+data |>
+group_by(Survey) |>
+summarise(across(
+    c(Depth), 
+    list(mean = \(x) mean(x, na.rm = TRUE),
+        min = \(x) min(x, na.rm = TRUE),
+        max = \(x) max(x, na.rm = TRUE))
+    ))
