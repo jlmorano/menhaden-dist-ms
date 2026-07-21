@@ -32,6 +32,7 @@
 
 
 rm(list = ls())
+gc()
 
 library(tidyverse)
 library(mgcv)
@@ -192,20 +193,20 @@ for (name in names(data.list)) {
 }
 
 # NEW - Add chlorophyll-a, but truncate to 1997-2023
-# 11. (for fall) Presence ~ s(Year, by State) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin + chlor_a
+# 11. (for fall) Presence ~ s(Year, by State) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin + mean_chlor_a
 for (name in names(data.list.comp)) {
   new.name <- paste0("m11_", name)
-  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin + chlor_a, 
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin + mean_chlor_a, 
                                 family = binomial(link = "logit"), 
                                 method = "REML", 
                                 data = data.list.comp[[name]])
   pa.gam.summaries[[new.name]] <- summary(pa.gam.list[[new.name]])
 }
 
-# 12. (for spring) Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin + chlor_a
+# 12. (for spring) Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin + mean_chlor_a
 for (name in names(data.list.comp)) {
   new.name <- paste0("m12_", name)
-  pa.gam.list[[new.name]] = gam(Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin + chlor_a, 
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + SurfTemp + SurfSalin + mean_chlor_a, 
                                 family = binomial(link = "logit"), 
                                 method = "REML", 
                                 data = data.list.comp[[name]])
@@ -213,13 +214,34 @@ for (name in names(data.list.comp)) {
 }
 
 
+ #NEW - Add chlorophyll-a, drop salinity, truncate to 1997-2023
+# 13. (for fall) Presence ~ s(Year, by State) + State + s(Survey, bs = "re") + Depth + SurfTemp + mean_chlor_a
+for (name in names(data.list.comp)) {
+  new.name <- paste0("m13_", name)
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year, by = State) + State + s(Survey, bs = "re") + Depth + SurfTemp + mean_chlor_a, 
+                                family = binomial(link = "logit"), 
+                                method = "REML", 
+                                data = data.list.comp[[name]])
+  pa.gam.summaries[[new.name]] <- summary(pa.gam.list[[new.name]])
+}
+
+# 14. (for spring) Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + SurfTemp + mean_chlor_a
+for (name in names(data.list.comp)) {
+  new.name <- paste0("m14_", name)
+  pa.gam.list[[new.name]] = gam(Presence ~ s(Year) + State + s(Survey, bs = "re") + Depth + SurfTemp + mean_chlor_a, 
+                                family = binomial(link = "logit"), 
+                                method = "REML", 
+                                data = data.list.comp[[name]])
+  pa.gam.summaries[[new.name]] <- summary(pa.gam.list[[new.name]])
+}
+
 #----- Save model runs as RDS
-saveRDS(pa.gam.list, file = "PA-GAM-results-2026.rds")
-saveRDS(pa.gam.summaries, file = "PA-GAM-summaries-2026.rds")
+saveRDS(pa.gam.list, file = "PA-GAM-results-2026-July20.rds")
+saveRDS(pa.gam.summaries, file = "PA-GAM-summaries-2026-July20.rds")
 toc()
 
-pa.gam.list <- readRDS("PA-GAM-results-2026.rds")
-pa.gam.summaries <- readRDS("PA-GAM-summaries-2026.rds")
+pa.gam.list <- readRDS("PA-GAM-results-2026-July20.rds")
+pa.gam.summaries <- readRDS("PA-GAM-summaries-2026-July20.rds")
 
 
 
@@ -340,7 +362,8 @@ gratia::draw(pa.gam.list[[4]])
 # Get model coefficients to compare
 library(modelsummary)
 # pa.gam.table <- modelsummary(pa.gam.list, output = "data.frame")
-pa.gam.table <- modelsummary(pa.gam.list, output = "gam-model-results-table-2026.docx")
+pa.gam.table <- modelsummary(pa.gam.list, output = "gam-model-results-table-2026NEW.docx")
+pa.gam.table <- modelsummary(pa.gam.list, output = "gam-model-results-table-2026NEW.html")
 plot(pa.gam.list[[1]], pages = 1, all.terms = TRUE, rug = TRUE, shade = TRUE)
 coef(pa.gam.list[[1]])
 
@@ -394,8 +417,8 @@ for (i in unique(data.list$alldata.fall$State)) {
 preddata.pa.gam.list <- list(alld.preddata.pa.gam.spring = alld.preddata.pa.gam.spring, alld.preddata.pa.gam.fall = alld.preddata.pa.gam.fall)
 
 # Convert State to factor with ordered levels from North to South
-preddata.pa.gam.list[[1]]$State <- factor(preddata.pa.gam.list[[1]]$State, levels = c("GME", "MA", "RICTNY", "NJ", "DEMD", "VA", "NC", "SCGAFL"))
-preddata.pa.gam.list[[2]]$State <- factor(preddata.pa.gam.list[[2]]$State, levels = c("GME", "MA", "RICTNY", "NJ", "DEMD", "VA", "NC", "SCGAFL"))
+preddata.pa.gam.list[[1]]$State <- factor(preddata.pa.gam.list[[1]]$State, levels = c("MENH", "MA", "RICTNY", "NJ", "DEMD", "VA", "NC", "SCGAFL"))
+preddata.pa.gam.list[[2]]$State <- factor(preddata.pa.gam.list[[2]]$State, levels = c("MENH", "MA", "RICTNY", "NJ", "DEMD", "VA", "NC", "SCGAFL"))
 # Convert Survey to factor
 preddata.pa.gam.list[[1]]$Survey <- factor(preddata.pa.gam.list[[1]]$Survey)
 preddata.pa.gam.list[[2]]$Survey <- factor(preddata.pa.gam.list[[2]]$Survey)

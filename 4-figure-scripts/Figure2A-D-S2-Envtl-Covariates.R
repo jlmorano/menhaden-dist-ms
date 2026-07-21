@@ -31,16 +31,18 @@ data.list <- readRDS(here(dir, "2-input-data", "menhaden.data.list.062026.rds"))
 # Factor order seasons and states
 data.list[[1]] <- data.list[[1]] |>
  mutate(
-  Season = factor(Season, levels = c("Spring", "Fall")),
-  State = factor(State, levels = c("GME", "MA", "RICTNY", "NJ", "DEMD", "VA", "NC", "SCGAFL"))
+  Season = factor(Season, levels = c("SPRING", "FALL")),
+  State = factor(State, levels = c("MENH", "MA", "RICTNY", "NJ", "DEMD", "VA", "NC", "SCGAFL"))
   ) |>
-  filter(if_any(c(Season, State)), ~ !is.na(.))
-data.list[[2]] <- data.list[[1]] |>
+  filter(!is.na(Season) & !is.na(State))
+data.list[[2]] <- data.list[[2]] |>
  mutate(
-  Season = factor(Season, levels = c("Spring", "Fall")),
-  State = factor(State, levels = c("GME", "MA", "RICTNY", "NJ", "DEMD", "VA", "NC", "SCGAFL"))
+  Season = factor(Season, levels = c("SPRING", "FALL")),
+  State = factor(State, levels = c("MENH", "MA", "RICTNY", "NJ", "DEMD", "VA", "NC", "SCGAFL"))
   ) |>
-  filter(!is.na(Season, State))
+  filter(!is.na(Season) & !is.na(State))
+
+
 
 
 ###########################################################################################
@@ -49,21 +51,21 @@ data.list[[2]] <- data.list[[1]] |>
 
 # Overall by season
 spring.means <- data.list[[1]] |>
-  group_by(Presence) |>
+  # group_by(Presence) |>
   summarise(across(
     c(Depth, SurfTemp, SurfSalin, mean_chlor_a), 
     list(mean = \(x) mean(x, na.rm = TRUE),
-        min = \(x) min(x, na.rm = TRUE),
-        max = \(x) max(x, na.rm = TRUE))
-    ))
+      min  = \(x) if (all(is.na(x))) NA_real_ else min(x, na.rm = TRUE),
+      max  = \(x) if (all(is.na(x))) NA_real_ else max(x, na.rm = TRUE))
+  ))
 
 fall.means <- data.list[[2]] |> 
-  group_by(Presence) |>
+  # group_by(Presence) |>
   summarise(across(
     c(Depth, SurfTemp, SurfSalin, mean_chlor_a), 
     list(mean = \(x) mean(x, na.rm = TRUE),
-        min = \(x) min(x, na.rm = TRUE),
-        max = \(x) max(x, na.rm = TRUE))
+        min = \(x) if (all(is.na(x))) NA_real_ else min(x, na.rm = TRUE),
+        max = \(x) if (all(is.na(x))) NA_real_ else max(x, na.rm = TRUE))
     ))
 
 view(spring.means)
@@ -75,28 +77,39 @@ write.table(fall.means, "clipboard", sep = "\t", row.names = FALSE)
 
 # Overall by season, state
 spring.means2 <- data.list[[1]] |>
-  group_by(Presence, State) |>
-  summarise(across(
-    c(Depth, SurfTemp, SurfSalin, mean_chlor_a), 
-    list(mean = \(x) mean(x, na.rm = TRUE),
-        min = \(x) min(x, na.rm = TRUE),
-        max = \(x) max(x, na.rm = TRUE))
-    ))
+  summarise(
+    across(
+      c(Depth, SurfTemp, SurfSalin, mean_chlor_a), 
+      list(
+        mean = \(x) mean(x, na.rm = TRUE),
+        min  = \(x) if (all(is.na(x))) NA_real_ else min(x, na.rm = TRUE),
+        max  = \(x) if (all(is.na(x))) NA_real_ else max(x, na.rm = TRUE)
+      )
+    ),
+    .by = c(State, Season)
+  )
 
 fall.means2 <- data.list[[2]] |> 
-  group_by(Presence, State) |>
-  summarise(across(
-    c(Depth, SurfTemp, SurfSalin, mean_chlor_a), 
-    list(mean = \(x) mean(x, na.rm = TRUE),
-        min = \(x) min(x, na.rm = TRUE),
-        max = \(x) max(x, na.rm = TRUE))
-    ))
+ summarise(
+    across(
+      c(Depth, SurfTemp, SurfSalin, mean_chlor_a), 
+      list(
+        mean = \(x) mean(x, na.rm = TRUE),
+        min  = \(x) if (all(is.na(x))) NA_real_ else min(x, na.rm = TRUE),
+        max  = \(x) if (all(is.na(x))) NA_real_ else max(x, na.rm = TRUE)
+      )
+    ),
+    .by = c(State, Season)
+  )
 
 view(spring.means2)
 view(fall.means2)
 
 write.table(spring.means2, "clipboard", sep = "\t", row.names = FALSE)
 write.table(fall.means2, "clipboard", sep = "\t", row.names = FALSE)
+
+
+
 
 ###########################################################################################
 #----- 1. NEW Supplemental Fig X. Correlations between variables ------------------------------------
@@ -136,8 +149,8 @@ pal8 <- c("#440154", "#482878", "#3e4989", "#26828e", "#35b779", "#6ece58", "#bd
 
 plot_data <- bind_rows(
   list("Spring" = data.list[[1]], "Fall" = data.list[[2]]), 
-  .id = "Source"
-)
+  .id = "Source") |>
+  mutate(Source = factor(Source, levels = c("Spring", "Fall")))
 
 # Surface Temperature using facet_wrap
 ggplot(plot_data, aes(x = Year, y = SurfTemp, color = State, fill = State)) +
@@ -145,12 +158,14 @@ ggplot(plot_data, aes(x = Year, y = SurfTemp, color = State, fill = State)) +
   geom_smooth(se = TRUE, alpha = 0.5, linewidth = 1) +
   scale_color_manual(values = pal8) +
   scale_fill_manual(values = pal8) +
-  facet_wrap(~Season) + 
+  facet_wrap(~Source) + 
   theme_classic() +
   theme(text = element_text(size = 16),
         strip.background = element_blank(), # Cleans up the facet labels
         strip.text = element_text(face = "bold")) +
-  labs(y = "Surface Temperature (°C)")
+  labs(tag = "A",
+   y = "Surface Temperature (°C)", 
+   x = " ")
 ggsave(file = here(dir, "5-figures", "NEWFigX.state-temp-years.png"), width=10, height = 5)
 
 # Surface Salinity using facet_wrap
@@ -164,7 +179,9 @@ ggplot(plot_data, aes(x = Year, y = SurfSalin, color = State, fill = State)) +
   theme(text = element_text(size = 16),
         strip.background = element_blank(), # Cleans up the facet labels
         strip.text = element_text(face = "bold")) +
-  labs(y = "Surface Salinity (ppt)")
+  labs(tag = "B",
+   y = "Surface Salinity (ppt)",
+   x = " ")
 ggsave(file = here(dir, "5-figures", "NEWFigX.state-salinity-years.png"), width=10, height = 5)
 
 # Chlorophyll-a using facet_wrap
@@ -178,7 +195,9 @@ ggplot(plot_data, aes(x = Year, y = mean_chlor_a, color = State, fill = State)) 
   theme(text = element_text(size = 16),
         strip.background = element_blank(), # Cleans up the facet labels
         strip.text = element_text(face = "bold")) +
-  labs(y = "Chlorophyll-a (mg/m³)")
+  labs(tag = "C",
+    y = "Chlorophyll-a (mg/m³)",
+    x = " ")
 ggsave(file = here(dir, "5-figures", "NEWFigX.state-chloro-years.png"), width=10, height = 5)
 
 
@@ -297,115 +316,63 @@ ggsave(here(dir, "5-figures", file = "Fig2D.presence-v-chlorophyll.png"), width=
 
 
 
-###########################################################################################
-#----- Figure 2E. Biomass vs Temperature  ------------------------
-###########################################################################################
-# Linear fit of Spring Weight.kg to SurfTemp
-lm_model3 <- lm(log(Weight.kg) ~ SurfTemp, data = subset(data.list[[1]], Weight.kg > 0))# Get the R-squared value
-rsq3 <- summary(lm_model3)$r.squared
+# ###########################################################################################
+# #----- Figure 2E. Biomass vs Temperature  ------------------------
+# ###########################################################################################
+# # Linear fit of Spring Weight.kg to SurfTemp
+# lm_model3 <- lm(log(Weight.kg) ~ SurfTemp, data = subset(data.list[[1]], Weight.kg > 0))# Get the R-squared value
+# rsq3 <- summary(lm_model3)$r.squared
 
-# Linear fit of Fall Weight.kg to SurfTemp
-lm_model4 <- lm(log(Weight.kg) ~ SurfTemp, data = subset(data.list[[2]], Weight.kg > 0))
-# Get the R-squared value
-rsq4 <- summary(lm_model4)$r.squared
-
-
-ggplot(data = subset(data.list[[1]], Weight.kg > 0), aes(x=SurfTemp, y=log(Weight.kg))) +
-  geom_point(color = "#006164", alpha = 0.75) +
-  geom_point(data = subset(data.list[[2]], Weight.kg > 0), aes(x=SurfTemp, y=log(Weight.kg)), color = "#DB4325", alpha = 0.75) +
-  geom_smooth(method = "lm", aes(x = SurfTemp, y = log(Weight.kg)), color = "grey20", se = TRUE) +
-  geom_smooth(data = subset(data.list[[2]], Weight.kg > 0), method = "lm", aes(x = SurfTemp, y = log(Weight.kg)), color = "grey40", se = TRUE) +
-  # annotate("text", x = 32, y = 1.1, label = paste("Spring R² = ", round(rsq3, 2)), color = "#006164", size = 4) +
-  # annotate("text", x = 37, y = 0.5, label = paste("Fall R² = ", round(rsq4, 2)), color = "#DB4325", size = 4) +
-  theme_classic() +
-  theme(text = element_text(size = 16)) +
-  # scale_x_continuous(lim = c(0, 40), breaks = seq(0, 40, by = 5)) +
-  labs(x= "Water Temperature (°C)", y = "log(Biomass) (kg/tow)")
-ggsave(here(dir, "5-figures", file = "Fig2E.biomass-v-temp.png"), width=4, height = 4)
+# # Linear fit of Fall Weight.kg to SurfTemp
+# lm_model4 <- lm(log(Weight.kg) ~ SurfTemp, data = subset(data.list[[2]], Weight.kg > 0))
+# # Get the R-squared value
+# rsq4 <- summary(lm_model4)$r.squared
 
 
-
-###########################################################################################
-#----- Figure 2F. Biomass vs Depth  ------------------------
-###########################################################################################
-# Linear fit of Spring Weight.kg to Depth
-lm_model5 <- lm(log(Weight.kg) ~ Depth, data = subset(data.list[[1]], Weight.kg > 0))
-# Get the R-squared value
-rsq5 <- summary(lm_model5)$r.squared
-
-# Linear fit of Fall Weight.kg to Depth
-lm_model6 <- lm(log(Weight.kg) ~ Depth, data = subset(data.list[[2]], Weight.kg > 0))
-# Get the R-squared value
-rsq6 <- summary(lm_model6)$r.squared
-
-
-ggplot(data = subset(data.list[[1]], Weight.kg > 0), aes(x=Depth, y=log(Weight.kg))) +
-  geom_point(color = "#006164", alpha = 0.75) +
-  geom_point(data = subset(data.list[[2]], Weight.kg > 0), aes(x=Depth, y=log(Weight.kg)), color = "#DB4325", alpha = 0.75) +
-  geom_smooth(method = "lm", aes(x = Depth, y = log(Weight.kg)), color = "grey20", se = TRUE) +
-  geom_smooth(data = subset(data.list[[2]], Weight.kg > 0), method = "lm", aes(x = Depth, y = log(Weight.kg)), color = "grey40", se = TRUE) +
-  # annotate("text", x = 450, y = 0.5, label = paste("Spring R² = ", round(rsq5, 2)), color = "#006164", size = 4) +
-  # annotate("text", x = 325, y = -0.5, label = paste("Fall R² = ", round(rsq6, 2)), color = "#DB4325", size = 4) +
-  theme_classic() +
-  theme(text = element_text(size = 16)) +
-  scale_x_continuous(lim = c(0, 200), breaks = seq(0, 200, by = 50)) + 
-  labs(x= "Depth (m)", y = "log(Biomass) (kg/tow)")
-ggsave(here(dir, "5-figures", file = "Fig2F.biomass-v-depth.png"), width=4, height = 4)
-
-
-###########################################################################################
-#----- Figure 2G. Biomass vs Salinity  ------------------------
-###########################################################################################
-# Linear fit of Spring Weight.kg to Salinity
-lm_model7 <- lm(log(Weight.kg) ~ SurfSalin, data = subset(data.list[[1]], Weight.kg > 0))
-# Get the R-squared value
-rsq7 <- summary(lm_model7)$r.squared
-
-# Linear fit of Fall Weight.kg to Salinity
-lm_model8 <- lm(log(Weight.kg) ~ SurfSalin, data = subset(data.list[[2]], Weight.kg > 0))
-# Get the R-squared value
-rsq8 <- summary(lm_model8)$r.squared
-
-
-ggplot(subset(data.list[[1]], Weight.kg > 0), aes(x=SurfSalin, y=log(Weight.kg))) +
-  geom_point(color = "#006164", alpha = 0.75) +
-  geom_point(data = subset(data.list[[2]], Weight.kg > 0), aes(x=SurfSalin, y=log(Weight.kg)), color = "#DB4325", alpha = 0.75) +
-  geom_smooth(method = "lm", aes(x = SurfSalin, y = log(Weight.kg)), color = "grey20", se = TRUE) +
-  geom_smooth(data = subset(data.list[[2]], Weight.kg > 0), method = "lm", aes(x = SurfSalin, y = log(Weight.kg)), color = "grey50", se = TRUE) +
-  # annotate("text", x = 450, y = 0.5, label = paste("Spring R² = ", round(rsq7, 2)), color = "#006164", size = 4) +
-  # annotate("text", x = 325, y = -0.5, label = paste("Fall R² = ", round(rsq8, 2)), color = "#DB4325", size = 4) +
-  theme_classic() +
-  theme(text = element_text(size = 16)) +
-  labs(x= "Salinity (ppt)", y = "log(Biomass) (kg/tow)")
-ggsave(here(dir, "5-figures", file = "Fig2G.biomass-v-salinity.png"), width=4, height = 4)
+# ggplot(data = subset(data.list[[1]], Weight.kg > 0), aes(x=SurfTemp, y=log(Weight.kg))) +
+#   geom_point(color = "#006164", alpha = 0.75) +
+#   geom_point(data = subset(data.list[[2]], Weight.kg > 0), aes(x=SurfTemp, y=log(Weight.kg)), color = "#DB4325", alpha = 0.75) +
+#   geom_smooth(method = "lm", aes(x = SurfTemp, y = log(Weight.kg)), color = "grey20", se = TRUE) +
+#   geom_smooth(data = subset(data.list[[2]], Weight.kg > 0), method = "lm", aes(x = SurfTemp, y = log(Weight.kg)), color = "grey40", se = TRUE) +
+#   # annotate("text", x = 32, y = 1.1, label = paste("Spring R² = ", round(rsq3, 2)), color = "#006164", size = 4) +
+#   # annotate("text", x = 37, y = 0.5, label = paste("Fall R² = ", round(rsq4, 2)), color = "#DB4325", size = 4) +
+#   theme_classic() +
+#   theme(text = element_text(size = 16)) +
+#   # scale_x_continuous(lim = c(0, 40), breaks = seq(0, 40, by = 5)) +
+#   labs(x= "Water Temperature (°C)", y = "log(Biomass) (kg/tow)")
+# ggsave(here(dir, "5-figures", file = "Fig2E.biomass-v-temp.png"), width=4, height = 4)
 
 
 
-###########################################################################################
-#----- Figure 2H. Biomass vs Chlorophyll  ------------------------
-###########################################################################################
-# Linear fit of Spring Weight.kg to Chlorophyll
-lm_model9 <- lm(log(Weight.kg) ~ mean_chlor_a, data = subset(data.list[[1]], Weight.kg > 0))
-# Get the R-squared value
-rsq9 <- summary(lm_model9)$r.squared
+# ###########################################################################################
+# #----- Figure 2F. Biomass vs Depth  ------------------------
+# ###########################################################################################
+# # Linear fit of Spring Weight.kg to Depth
+# lm_model5 <- lm(log(Weight.kg) ~ Depth, data = subset(data.list[[1]], Weight.kg > 0))
+# # Get the R-squared value
+# rsq5 <- summary(lm_model5)$r.squared
 
-# Linear fit of Fall Weight.kg to Chlorophyll
-lm_model10 <- lm(log(Weight.kg) ~ mean_chlor_a, data = subset(data.list[[2]], Weight.kg > 0))
-# Get the R-squared value
-rsq10 <- summary(lm_model10)$r.squared
+# # Linear fit of Fall Weight.kg to Depth
+# lm_model6 <- lm(log(Weight.kg) ~ Depth, data = subset(data.list[[2]], Weight.kg > 0))
+# # Get the R-squared value
+# rsq6 <- summary(lm_model6)$r.squared
 
 
-ggplot(subset(data.list[[1]], Weight.kg > 0), aes(x=mean_chlor_a, y=log(Weight.kg))) +
-  geom_point(color = "#006164", alpha = 0.75) +
-  geom_point(data = subset(data.list[[2]], Weight.kg > 0), aes(x=mean_chlor_a, y=log(Weight.kg)), color = "#DB4325", alpha = 0.75) +
-  geom_smooth(method = "lm", aes(x = mean_chlor_a, y = log(Weight.kg)), color = "grey20", se = TRUE) +
-  geom_smooth(data = subset(data.list[[2]], Weight.kg > 0), method = "lm", aes(x = mean_chlor_a, y = log(Weight.kg)), color = "grey50", se = TRUE) +
-  # annotate("text", x = 65, y = 3.75, label = paste("Spring R² = ", round(rsq9, 2)), color = "#006164", size = 4) +
-  # annotate("text", x = 70, y = 1.2, label = paste("Fall R² = ", round(rsq10, 2)), color = "#DB4325", size = 4) +
-  theme_classic() +
-  theme(text = element_text(size = 16)) +
-  labs(x= "Chlorophyll (mg/m³)", y = "log(Biomass) (kg/tow)")
-ggsave(here(dir, "5-figures", file = "Fig2H.biomass-v-chlorophyll.png"), width=4, height = 4)
+# ggplot(data = subset(data.list[[1]], Weight.kg > 0), aes(x=Depth, y=log(Weight.kg))) +
+#   geom_point(color = "#006164", alpha = 0.75) +
+#   geom_point(data = subset(data.list[[2]], Weight.kg > 0), aes(x=Depth, y=log(Weight.kg)), color = "#DB4325", alpha = 0.75) +
+#   geom_smooth(method = "lm", aes(x = Depth, y = log(Weight.kg)), color = "grey20", se = TRUE) +
+#   geom_smooth(data = subset(data.list[[2]], Weight.kg > 0), method = "lm", aes(x = Depth, y = log(Weight.kg)), color = "grey40", se = TRUE) +
+#   # annotate("text", x = 450, y = 0.5, label = paste("Spring R² = ", round(rsq5, 2)), color = "#006164", size = 4) +
+#   # annotate("text", x = 325, y = -0.5, label = paste("Fall R² = ", round(rsq6, 2)), color = "#DB4325", size = 4) +
+#   theme_classic() +
+#   theme(text = element_text(size = 16)) +
+#   scale_x_continuous(lim = c(0, 200), breaks = seq(0, 200, by = 50)) + 
+#   labs(x= "Depth (m)", y = "log(Biomass) (kg/tow)")
+# ggsave(here(dir, "5-figures", file = "Fig2F.biomass-v-depth.png"), width=4, height = 4)
+
+
+
 
 
 
